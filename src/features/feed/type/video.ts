@@ -1,6 +1,7 @@
 import { restaurantData } from "@/types/restaurant";
 
 export type videoData = {
+  id: string;
   title: string;
   description: string;
   thumbnail: string;

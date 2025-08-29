@@ -1,3 +1,4 @@
+import { createClient } from "@/utils/supabase/server";
 import { videoData, locationData } from "../type/video";
 import { restaurantData } from "@/types/restaurant";
 
@@ -19,6 +20,7 @@ export const getVideo = async (videoId: string) => {
   }
 
   const videoData: videoData = {
+    id: tempVideoData.id,
     title: tempVideoData.snippet.title,
     description: tempVideoData.snippet.description,
     thumbnail: tempVideoData.snippet.thumbnails.default.url,
@@ -65,7 +67,8 @@ export const getVideo = async (videoId: string) => {
       }) || [],
   };
   console.log("Restaurant:", videoData.restaurant);
-
+  const uploadedVideo = await uploadVideo(videoData);
+  console.log("Uploaded video:", uploadedVideo);
   return videoData;
 };
 
@@ -109,4 +112,61 @@ const getLatitudeLongitude = async (videoData: videoData, locationData: location
     latitude: data.results[0].geometry.location.lat,
     longitude: data.results[0].geometry.location.lng,
   };
+};
+
+export const uploadVideo = async (videoData: videoData) => {
+  const supabase = await createClient();
+  const { data: user } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase.from("videos").insert({
+    id: videoData.id,
+    title: videoData.title,
+    description: videoData.description,
+    latitude: videoData.latitude,
+    longitude: videoData.longitude,
+    location_description: videoData.locationDescription,
+    created_by: user?.user?.id,
+  });
+
+  const { data: restaurantData, error: restaurantError } = await supabase
+    .from("restaurants")
+    .insert({
+      video_id: videoData.id,
+      name: videoData.restaurant?.name,
+      address: videoData.restaurant?.address,
+      rating: videoData.restaurant?.rating,
+      latitude: videoData.latitude,
+      longitude: videoData.longitude,
+      photos: videoData.restaurant?.photos,
+    })
+    .select()
+    .single();
+
+  if (restaurantError) {
+    console.error("Error inserting restaurant:", restaurantError);
+  }
+
+  // Insert all reviews at once
+  if (
+    videoData.restaurant?.reviews &&
+    videoData.restaurant.reviews.length > 0 &&
+    restaurantData?.id
+  ) {
+    const reviewsToInsert = videoData.restaurant.reviews.map((review) => ({
+      restaurant_id: restaurantData.id,
+      author_name: review.name,
+      comment: review.comment,
+      rating: review.rating,
+    }));
+
+    const { data: restaurantReviews, error: restaurantReviewsError } = await supabase
+      .from("restaurant_reviews")
+      .insert(reviewsToInsert);
+
+    if (restaurantReviewsError) {
+      console.error("Error inserting restaurant reviews:", restaurantReviewsError);
+    }
+  }
+
+  return { data, error };
 };
