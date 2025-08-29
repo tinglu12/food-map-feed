@@ -1,20 +1,23 @@
 "use client";
 
-import VideoPlayer from "@/features/feed/components/VideoPlayer";
-import LinkInput from "@/features/link-input/components/LinkInput";
 import RestaurantDisplay from "@/features/map/components/RestaurantDisplay";
 import MapCaller from "@/features/map/components/LazyMap";
 import React from "react";
 import { useVideos } from "@/features/feed/hooks/useVideos";
 import { ResetButton } from "@/features/feed/components/ResetButton";
 import VideoFeed from "@/features/feed/components/VideoFeed";
+import NextButton from "@/features/feed/components/NextButton";
 
 const FeedPage = () => {
   const { video, loading } = useVideos();
   console.log("video:", video);
   return (
     <main className="flex flex-col gap-2 justify-center items-center w-full h-screen overflow-hidden">
-      <ResetButton />
+      <div className="flex gap-2">
+        <ResetButton />
+        {video && <NextButton />}
+      </div>
+
       {video && (
         <section className="flex md:flex-row flex-col justify-center items-center gap-2 w-full max-w-full p-4 md:p-8 flex-1 overflow-hidden">
           {video?.restaurant && <RestaurantDisplay {...video.restaurant} />}
