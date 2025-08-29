@@ -6,7 +6,7 @@ import UserProfile from "./auth/UserProfile";
 
 export const Header = () => {
   return (
-    <header className="flex gap-2 justify-start items-space-between w-full p-4 ">
+    <header className="flex gap-2 justify-between items-center w-full p-4 ">
       <div className="flex gap-2 justify-start items-center">
         <Button variant="outline" asChild>
           <Link href="/">Home</Link>
@@ -17,7 +17,6 @@ export const Header = () => {
       </div>
       <div className="flex gap-2">
         <UserProfile />
-        <LogoutButton />
       </div>
     </header>
   );

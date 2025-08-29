@@ -14,9 +14,7 @@ const FeedPage = () => {
   console.log("video:", video);
   return (
     <main className="flex flex-col gap-2 justify-center items-center w-full h-screen overflow-hidden">
-      <div className="w-full max-w-full px-4">
-        <ResetButton />
-      </div>
+      <ResetButton />
       {video && (
         <section className="flex md:flex-row flex-col justify-center items-center gap-2 w-full max-w-full p-4 md:p-8 flex-1 overflow-hidden">
           {video?.restaurant && <RestaurantDisplay {...video.restaurant} />}
