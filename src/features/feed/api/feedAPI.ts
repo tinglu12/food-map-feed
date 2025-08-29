@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
+import { returnedVideo, videoData } from "../type/video";
 
 export const getFeed = async () => {
   const supabase = createClient();
@@ -41,6 +42,32 @@ export const getFeed = async () => {
     throw watchedVideoError;
   }
 
+  const returnedVideo = unwatchedVideo?.[0] as returnedVideo;
+  console.log("Returned video:", returnedVideo);
+  const video: videoData = {
+    id: returnedVideo.id,
+    title: returnedVideo.title,
+    description: returnedVideo.description,
+    thumbnail: returnedVideo.thumbnail,
+    latitude: returnedVideo.latitude,
+    longitude: returnedVideo.longitude,
+    locationDescription: returnedVideo.locationDescription,
+    restaurant: {
+      name: returnedVideo.restaurant_name,
+      address: returnedVideo.restaurant_address,
+      rating: returnedVideo.restaurant_rating,
+      priceLevel: 0,
+      photos: returnedVideo.restaurant_photos,
+      reviews: returnedVideo.restaurant_reviews,
+    },
+  };
   // Return the video or null if no unwatched videos
-  return unwatchedVideo?.[0] || null;
+  return video || null;
+};
+
+export const resetHistory = async () => {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  const { error } = await supabase.from("watched_videos").delete().eq("user_id", user?.user?.id);
+  return error;
 };

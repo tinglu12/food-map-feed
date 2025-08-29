@@ -23,3 +23,17 @@ export type locationData = {
   photos: any[];
   reviews: any[];
 };
+
+export type returnedVideo = videoData & {
+  is_active: boolean;
+  is_favorited: boolean;
+  restaurant_name: string;
+  restaurant_address: string;
+  restaurant_rating: number;
+  restaurant_price_level: number;
+  restaurant_photos: any[];
+  restaurant_reviews: any[];
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+};

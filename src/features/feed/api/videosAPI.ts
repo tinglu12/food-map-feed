@@ -118,6 +118,19 @@ export const uploadVideo = async (videoData: videoData) => {
   const supabase = await createClient();
   const { data: user } = await supabase.auth.getUser();
 
+  const { data: existingVideo, error: videoError } = await supabase
+    .from("videos")
+    .select("*")
+    .eq("id", videoData.id);
+
+  if (videoError) {
+    console.error("Error fetching video:", videoError);
+  }
+
+  if (existingVideo) {
+    return { data: existingVideo, error: null };
+  }
+
   const { data, error } = await supabase.from("videos").insert({
     id: videoData.id,
     title: videoData.title,
