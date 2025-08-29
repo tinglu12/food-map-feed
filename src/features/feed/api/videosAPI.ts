@@ -117,20 +117,21 @@ const getLatitudeLongitude = async (videoData: videoData, locationData: location
 export const uploadVideo = async (videoData: videoData) => {
   const supabase = await createClient();
   const { data: user } = await supabase.auth.getUser();
-
+  console.log("video ID:", videoData.id);
   const { data: existingVideo, error: videoError } = await supabase
     .from("videos")
     .select("*")
     .eq("id", videoData.id);
+  console.log("Existing video:", existingVideo);
 
   if (videoError) {
     console.error("Error fetching video:", videoError);
   }
-
-  if (existingVideo) {
+  console.log("Existing video");
+  if (existingVideo && existingVideo.length > 0) {
     return { data: existingVideo, error: null };
   }
-
+  console.log("Creating video");
   const { data, error } = await supabase.from("videos").insert({
     id: videoData.id,
     title: videoData.title,
@@ -140,6 +141,8 @@ export const uploadVideo = async (videoData: videoData) => {
     location_description: videoData.locationDescription,
     created_by: user?.user?.id,
   });
+
+  console.log("Creating restaurant");
 
   const { data: restaurantData, error: restaurantError } = await supabase
     .from("restaurants")
@@ -158,7 +161,7 @@ export const uploadVideo = async (videoData: videoData) => {
   if (restaurantError) {
     console.error("Error inserting restaurant:", restaurantError);
   }
-
+  console.log("Creating reviews");
   // Insert all reviews at once
   if (
     videoData.restaurant?.reviews &&

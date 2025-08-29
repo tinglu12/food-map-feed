@@ -7,19 +7,22 @@ import MapCaller from "@/features/map/components/LazyMap";
 import React from "react";
 import { useVideos } from "@/features/feed/hooks/useVideos";
 import { ResetButton } from "@/features/feed/components/ResetButton";
+import VideoFeed from "@/features/feed/components/VideoFeed";
 
 const FeedPage = () => {
   const { video, loading } = useVideos();
   console.log("video:", video);
   return (
-    <main className="flex flex-col gap-2 justify-center items-center w-screen h-screen overflow-hidden">
-      <ResetButton />
+    <main className="flex flex-col gap-2 justify-center items-center w-full h-screen overflow-hidden">
+      <div className="w-full max-w-full px-4">
+        <ResetButton />
+      </div>
       {video && (
-        <section className="flex md:flex-row flex-col justify-center items-center gap-2 w-full p-8 flex-1 overflow-hidden">
+        <section className="flex md:flex-row flex-col justify-center items-center gap-2 w-full max-w-full p-4 md:p-8 flex-1 overflow-hidden">
           {video?.restaurant && <RestaurantDisplay {...video.restaurant} />}
 
           <MapCaller coordinates={{ latitude: video?.latitude, longitude: video?.longitude }} />
-          <VideoPlayer videoId={video.id} />
+          <VideoFeed videoId={video.id} />
         </section>
       )}
       {loading && <div>Loading...</div>}
