@@ -1,6 +1,7 @@
 "use client";
 import {
   useFavoriteVideo,
+  useLoadVideoById,
   useResetHistory,
   useUnfavoriteVideo,
   useUnwatchedVideo,
@@ -11,6 +12,7 @@ export const useVideos = () => {
   const resetHistoryMutation = useResetHistory();
   const favoriteVideoMutation = useFavoriteVideo();
   const unfavoriteVideoMutation = useUnfavoriteVideo();
+  const loadVideoByIdMutation = useLoadVideoById();
   const getNextVideo = async () => {
     if (video) {
       await refetch();
@@ -29,9 +31,13 @@ export const useVideos = () => {
     await unfavoriteVideoMutation.mutateAsync(videoId);
   };
 
+  const loadVideoById = async (videoId: string) => {
+    await loadVideoByIdMutation.mutateAsync(videoId);
+  };
+
   return {
     video: video || null,
-    loading: isLoading,
+    loading: isLoading || loadVideoByIdMutation.isPending,
     error,
     getNextVideo,
     resetHistory,
@@ -40,5 +46,7 @@ export const useVideos = () => {
     isFavoriting: favoriteVideoMutation.isPending,
     unfavoriteVideo,
     isUnfavoriting: unfavoriteVideoMutation.isPending,
+    loadVideoById,
+    isLoading: isLoading || loadVideoByIdMutation.isPending,
   };
 };

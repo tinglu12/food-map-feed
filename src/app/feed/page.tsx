@@ -10,8 +10,7 @@ import NextButton from "@/features/feed/components/NextButton";
 import FavoriteButton from "@/features/feed/components/FavoriteButton";
 
 const FeedPage = () => {
-  const { video, loading } = useVideos();
-  console.log("video:", video);
+  const { video, loading, loadVideoById } = useVideos();
   return (
     <main className="flex flex-col gap-2 justify-center items-center w-full h-screen overflow-hidden">
       <div className="flex gap-2">
@@ -24,7 +23,12 @@ const FeedPage = () => {
         <section className="flex md:flex-row flex-col justify-center items-center gap-2 w-full max-w-full p-4 md:p-8 flex-1 overflow-hidden">
           {video?.restaurant && <RestaurantDisplay {...video.restaurant} />}
 
-          <MapCaller coordinates={{ latitude: video?.latitude, longitude: video?.longitude }} />
+          <MapCaller
+            key={video?.id}
+            coordinates={{ latitude: video?.latitude, longitude: video?.longitude }}
+            videoId={video?.id}
+            onVideoChange={loadVideoById}
+          />
           <VideoFeed videoId={video.id} />
         </section>
       )}

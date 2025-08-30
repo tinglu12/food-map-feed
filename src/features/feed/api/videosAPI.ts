@@ -3,15 +3,12 @@ import { videoData, locationData } from "../type/video";
 import { restaurantData } from "@/types/restaurant";
 
 export const getVideo = async (videoId: string) => {
-  console.log("Video ID:", videoId);
   const response = await fetch(
     `https://www.googleapis.com/youtube/v3/videos?part=snippet,recordingDetails&id=${videoId}&key=${process.env.GOOGLE_API_KEY}`,
   );
   const data = await response.json();
 
   const tempVideoData = data.items?.[0];
-
-  console.log("tempVideoData:", tempVideoData);
 
   if (!tempVideoData) {
     return {
@@ -38,7 +35,6 @@ export const getVideo = async (videoId: string) => {
   }
 
   const place = locationResponse.places[0];
-  console.log("Place:", place);
 
   if (
     !videoData.latitude &&
@@ -66,16 +62,13 @@ export const getVideo = async (videoId: string) => {
         };
       }) || [],
   };
-  console.log("Restaurant:", videoData.restaurant);
   const uploadedVideo = await uploadVideo(videoData);
-  console.log("Uploaded video:", uploadedVideo);
   return videoData;
 };
 
 const getLocation = async (query: videoData) => {
   const endpoint = "https://places.googleapis.com/v1/places:searchText";
   const body = getLocationFromPrompt(query);
-  console.log("Body:", body);
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -89,7 +82,6 @@ const getLocation = async (query: videoData) => {
   });
 
   const data = await response.json();
-  console.log("Location data:", data);
   return data;
 };
 
@@ -117,21 +109,17 @@ const getLatitudeLongitude = async (videoData: videoData, locationData: location
 export const uploadVideo = async (videoData: videoData) => {
   const supabase = await createClient();
   const { data: user } = await supabase.auth.getUser();
-  console.log("video ID:", videoData.id);
   const { data: existingVideo, error: videoError } = await supabase
     .from("videos")
     .select("*")
     .eq("id", videoData.id);
-  console.log("Existing video:", existingVideo);
 
   if (videoError) {
     console.error("Error fetching video:", videoError);
   }
-  console.log("Existing video");
   if (existingVideo && existingVideo.length > 0) {
     return { data: existingVideo, error: null };
   }
-  console.log("Creating video");
   const { data, error } = await supabase.from("videos").insert({
     id: videoData.id,
     title: videoData.title,
@@ -141,8 +129,6 @@ export const uploadVideo = async (videoData: videoData) => {
     location_description: videoData.locationDescription,
     created_by: user?.user?.id,
   });
-
-  console.log("Creating restaurant");
 
   const { data: restaurantData, error: restaurantError } = await supabase
     .from("restaurants")
@@ -161,7 +147,6 @@ export const uploadVideo = async (videoData: videoData) => {
   if (restaurantError) {
     console.error("Error inserting restaurant:", restaurantError);
   }
-  console.log("Creating reviews");
   // Insert all reviews at once
   if (
     videoData.restaurant?.reviews &&

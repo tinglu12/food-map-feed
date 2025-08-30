@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getFeed, resetHistory, favoriteVideo, unfavoriteVideo } from "../api/feedAPI";
+import { favoritesKeys } from "@/features/map/lib/useFavoriteQueries";
+import { loadVideoById } from "../api/feedAPI";
 
 export const videoKeys = {
   all: ["videos"] as const,
@@ -36,7 +38,7 @@ export const useFavoriteVideo = () => {
     mutationFn: favoriteVideo,
     onMutate: async (videoId) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: videoKeys.unwatched() });
+      await queryClient.cancelQueries({ queryKey: [videoKeys.unwatched(), favoritesKeys.all] });
 
       // Snapshot the previous value
       const previousVideo = queryClient.getQueryData(videoKeys.unwatched());
@@ -62,8 +64,8 @@ export const useFavoriteVideo = () => {
       console.error("Error favoriting video:", err);
     },
     onSettled: () => {
-      // No need to refetch since we're using optimistic updates
-      // The cache is already updated correctly
+      // Invalidate favorites query to update the map
+      queryClient.invalidateQueries({ queryKey: favoritesKeys.all });
     },
   });
 };
@@ -74,7 +76,9 @@ export const useUnfavoriteVideo = () => {
     mutationFn: unfavoriteVideo,
     onMutate: async (videoId) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: videoKeys.unwatched() });
+      await queryClient.cancelQueries({
+        queryKey: [videoKeys.unwatched(), favoritesKeys.all],
+      });
 
       // Snapshot the previous value
       const previousVideo = queryClient.getQueryData(videoKeys.unwatched());
@@ -100,8 +104,22 @@ export const useUnfavoriteVideo = () => {
       console.error("Error unfavoriting video:", err);
     },
     onSettled: () => {
-      // No need to refetch since we're using optimistic updates
-      // The cache is already updated correctly
+      // Invalidate favorites query to update the map
+      queryClient.invalidateQueries({ queryKey: favoritesKeys.all });
+    },
+  });
+};
+
+export const useLoadVideoById = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: loadVideoById,
+    onSuccess: (data) => {
+      // Update the cache with the loaded video
+      queryClient.setQueryData(videoKeys.unwatched(), data);
+    },
+    onError: (error) => {
+      console.error("Error loading video by ID:", error);
     },
   });
 };

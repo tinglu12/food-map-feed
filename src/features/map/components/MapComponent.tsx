@@ -8,6 +8,7 @@ import RestaurantSidebar from "./RestaurantDisplay";
 import { restaurantData } from "@/types/restaurant";
 
 import "leaflet/dist/leaflet.css";
+import { useFavorites } from "../hooks/useFavorites";
 
 // Fix for default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -17,14 +18,30 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+// Custom favorite marker icon
+const favoriteIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 interface MapComponentProps {
   coordinates: { latitude: number; longitude: number };
+  onVideoChange?: (videoId: string) => void;
+  videoId?: string;
 }
 
-const MapComponent = ({ coordinates }: MapComponentProps) => {
-  console.log("Map coordinates:", coordinates);
-  console.log("Latitude:", coordinates.latitude, "Longitude:", coordinates.longitude);
+const MapComponent = ({ coordinates, onVideoChange, videoId }: MapComponentProps) => {
+  console.log("Coordinates:", coordinates);
+  const { data, error } = useFavorites();
 
+  const favoriteData = data?.filter((favorite) => favorite.videoId !== videoId);
+
+  console.log("Favorites:", data);
   // Check if coordinates are valid numbers
   if (
     !coordinates.latitude ||
@@ -55,6 +72,25 @@ const MapComponent = ({ coordinates }: MapComponentProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        {favoriteData?.map((favorite) => (
+          <Marker
+            key={favorite.videoId}
+            position={[favorite.latitude, favorite.longitude]}
+            icon={favoriteIcon}
+          >
+            <Popup>
+              <div>
+                <h3 className="font-bold">{favorite.name}</h3>
+                <button
+                  onClick={() => onVideoChange?.(favorite.videoId)}
+                  className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                >
+                  Watch Video
+                </button>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
         <Marker position={[coordinates.latitude, coordinates.longitude]}>
           <Popup>Video Location</Popup>
         </Marker>
