@@ -52,6 +52,7 @@ export const getFeed = async () => {
     latitude: returnedVideo.latitude,
     longitude: returnedVideo.longitude,
     locationDescription: returnedVideo.locationDescription,
+    isFavorited: returnedVideo.is_favorited,
     restaurant: {
       name: returnedVideo.restaurant_name,
       address: returnedVideo.restaurant_address,
@@ -69,5 +70,22 @@ export const resetHistory = async () => {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   const { error } = await supabase.from("watched_videos").delete().eq("user_id", user?.user?.id);
+  return error;
+};
+
+export const favoriteVideo = async (videoId: string) => {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  const { error } = await supabase.from("video_favorites").insert({
+    user_id: user?.user?.id,
+    video_id: videoId,
+  });
+  return error;
+};
+
+export const unfavoriteVideo = async (videoId: string) => {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  const { error } = await supabase.from("video_favorites").delete().eq("video_id", videoId);
   return error;
 };

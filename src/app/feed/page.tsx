@@ -7,6 +7,7 @@ import { useVideos } from "@/features/feed/hooks/useVideos";
 import { ResetButton } from "@/features/feed/components/ResetButton";
 import VideoFeed from "@/features/feed/components/VideoFeed";
 import NextButton from "@/features/feed/components/NextButton";
+import FavoriteButton from "@/features/feed/components/FavoriteButton";
 
 const FeedPage = () => {
   const { video, loading } = useVideos();
@@ -16,6 +17,7 @@ const FeedPage = () => {
       <div className="flex gap-2">
         <ResetButton />
         {video && <NextButton />}
+        {video && <FavoriteButton videoId={video.id} isFavorited={video.isFavorited} />}
       </div>
 
       {video && (

@@ -9,6 +9,7 @@ export type videoData = {
   longitude: number;
   locationDescription: string;
   restaurant: restaurantData | null;
+  isFavorited?: boolean;
 };
 
 export type locationData = {
