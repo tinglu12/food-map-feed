@@ -7,7 +7,7 @@ export const getVideo = async (videoId: string) => {
     `https://www.googleapis.com/youtube/v3/videos?part=snippet,recordingDetails&id=${videoId}&key=${process.env.GOOGLE_API_KEY}`,
   );
   const data = await response.json();
-
+  console.log("Data:", data);
   const tempVideoData = data.items?.[0];
 
   if (!tempVideoData) {
@@ -15,7 +15,7 @@ export const getVideo = async (videoId: string) => {
       error: "Video not found",
     };
   }
-
+  console.log("Temp video data:", tempVideoData);
   const videoData: videoData = {
     id: tempVideoData.id,
     title: tempVideoData.snippet.title,
@@ -26,14 +26,14 @@ export const getVideo = async (videoId: string) => {
     locationDescription: tempVideoData.recordingDetails?.locationDescription,
     restaurant: null,
   };
-
+  console.log("Video data:", videoData);
   const locationResponse = await getLocation(videoData);
   if (!locationResponse.places || locationResponse.places.length === 0) {
     return {
       error: "Location not found",
     };
   }
-
+  console.log("Location response:", locationResponse);
   const place = locationResponse.places[0];
 
   if (
@@ -46,7 +46,9 @@ export const getVideo = async (videoId: string) => {
     videoData.latitude = location.latitude;
     videoData.longitude = location.longitude;
   }
-
+  videoData.latitude = place.location?.latitude;
+  videoData.longitude = place.location?.longitude;
+  console.log("Video data:", videoData);
   videoData.restaurant = {
     name: place.displayName?.text || "Unknown",
     address: place.formattedAddress || "",
@@ -63,6 +65,7 @@ export const getVideo = async (videoId: string) => {
       }) || [],
   };
   const uploadedVideo = await uploadVideo(videoData);
+  console.log("Uploaded video:", uploadedVideo);
   return videoData;
 };
 

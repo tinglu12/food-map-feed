@@ -28,6 +28,7 @@ const FeedPage = () => {
             coordinates={{ latitude: video?.latitude, longitude: video?.longitude }}
             videoId={video?.id}
             onVideoChange={loadVideoById}
+            name={video.restaurant?.name}
           />
           <VideoFeed videoId={video.id} />
         </section>

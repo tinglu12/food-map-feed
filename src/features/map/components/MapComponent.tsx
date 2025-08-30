@@ -33,9 +33,10 @@ interface MapComponentProps {
   coordinates: { latitude: number; longitude: number };
   onVideoChange?: (videoId: string) => void;
   videoId?: string;
+  name?: string;
 }
 
-const MapComponent = ({ coordinates, onVideoChange, videoId }: MapComponentProps) => {
+const MapComponent = ({ coordinates, onVideoChange, videoId, name }: MapComponentProps) => {
   console.log("Coordinates:", coordinates);
   const { data, error } = useFavorites();
 
@@ -92,7 +93,7 @@ const MapComponent = ({ coordinates, onVideoChange, videoId }: MapComponentProps
           </Marker>
         ))}
         <Marker position={[coordinates.latitude, coordinates.longitude]}>
-          <Popup>Video Location</Popup>
+          <Popup>{name || "Video Location"}</Popup>
         </Marker>
       </MapContainer>
     </div>

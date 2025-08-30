@@ -27,7 +27,10 @@ const VideoPage = async ({ params }: { params: Promise<{ video_id: string }> }) 
       <section className="flex md:flex-row flex-col justify-center items-center gap-2 w-full p-8 flex-1 overflow-hidden">
         {video.restaurant && <RestaurantDisplay {...video.restaurant} />}
 
-        <MapCaller coordinates={{ latitude: video.latitude, longitude: video.longitude }} />
+        <MapCaller
+          coordinates={{ latitude: video.latitude, longitude: video.longitude }}
+          name={video.restaurant?.name}
+        />
         <div className="md:w-1/3 h-full">
           <VideoPlayer videoId={video_id} />
         </div>
