@@ -8,7 +8,7 @@ const VideoFeed = ({ videoId }: { videoId: string }) => {
     await getNextVideo();
   };
   return (
-    <div className="flex flex-col gap-2 md:w-1/3 w-full h-full justify-center items-center">
+    <div className="flex flex-col gap-2 md:w-1/3 w-full h-full justify-center items-center z-100">
       <VideoPlayer videoId={videoId} />
     </div>
   );

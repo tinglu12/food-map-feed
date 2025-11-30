@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { videoData, locationData } from "../type/video";
 import { restaurantData } from "@/types/restaurant";
+import { openai } from "@/lib/openai";
 
 export const getVideo = async (videoId: string) => {
   const response = await fetch(
@@ -54,7 +55,7 @@ export const getVideo = async (videoId: string) => {
     address: place.formattedAddress || "",
     priceLevel: place.priceLevel || 0,
     rating: place.rating || 0,
-    photos: place.photos?.map((photo: any) => photo.flagContentUri) || [],
+    photos: place.photos?.map((photo: any) => photo.name) || [],
     reviews:
       place.reviews?.map((review: any) => {
         return {
@@ -64,14 +65,14 @@ export const getVideo = async (videoId: string) => {
         };
       }) || [],
   };
-  const uploadedVideo = await uploadVideo(videoData);
-  console.log("Uploaded video:", uploadedVideo);
+  await uploadVideo(videoData);
+  console.log("Uploaded video:", videoData);
   return videoData;
 };
 
 const getLocation = async (query: videoData) => {
   const endpoint = "https://places.googleapis.com/v1/places:searchText";
-  const body = getLocationFromPrompt(query);
+  const body = await getLocationFromPrompt(query);
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -88,9 +89,31 @@ const getLocation = async (query: videoData) => {
   return data;
 };
 
-const getLocationFromPrompt = (query: videoData) => {
+const getLocationFromPrompt = async (query: videoData) => {
+  const systemPrompt = `You are a helpful assistant that can help me get the location of a video. Use the following data to get the name of the location. If you do not feel confident, return the location description.
+  
+    Data:
+    Title: ${query.title}
+    Location Description: ${query.locationDescription}
+    Description: ${query.description}
+    Latitude: ${query.latitude}
+    Longitude: ${query.longitude}
+
+    Return in form of:
+
+    locationName: string (if you find the location name, if not, return the location description)
+    locationDescription: string
+  `;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "system", content: systemPrompt }],
+  });
+  console.log("Response:", response);
+
   const prompt = `Use the following video data to get the location:
   Location Description: ${query.locationDescription}
+  Location Name: ${response.choices[0].message.content}
   Description: ${query.description}
   Latitude: ${query.latitude}
   Longitude: ${query.longitude}

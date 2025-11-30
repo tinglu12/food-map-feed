@@ -20,8 +20,9 @@ const FeedPage = () => {
       </div>
 
       {video && (
-        <section className="flex md:flex-row flex-col justify-center items-center gap-2 w-full max-w-full p-4 md:p-8 flex-1 overflow-hidden">
+        <section className="flex md:flex-row flex-col flex-1 min-h-0 justify-between items-center gap-2 w-full overflow-hidden relative p-4">
           {video?.restaurant && <RestaurantDisplay {...video.restaurant} />}
+          <VideoFeed videoId={video.id} />
 
           <MapCaller
             key={video?.id}
@@ -30,7 +31,6 @@ const FeedPage = () => {
             onVideoChange={loadVideoById}
             name={video.restaurant?.name}
           />
-          <VideoFeed videoId={video.id} />
         </section>
       )}
       {loading && <div>Loading...</div>}

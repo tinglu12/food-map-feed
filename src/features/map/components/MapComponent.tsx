@@ -43,28 +43,11 @@ const MapComponent = ({ coordinates, onVideoChange, videoId, name }: MapComponen
   const favoriteData = data?.filter((favorite) => favorite.videoId !== videoId);
 
   console.log("Favorites:", data);
-  // Check if coordinates are valid numbers
-  if (
-    !coordinates.latitude ||
-    !coordinates.longitude ||
-    isNaN(coordinates.latitude) ||
-    isNaN(coordinates.longitude)
-  ) {
-    console.log("Invalid coordinates, not rendering marker");
-    return (
-      <MapContainer center={[0, 0]} zoom={2} scrollWheelZoom={false} className="w-full h-[50vh]">
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-      </MapContainer>
-    );
-  }
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full absolute inset-0 z-0">
       <MapContainer
-        center={[coordinates.latitude, coordinates.longitude]}
+        center={[coordinates.latitude || 0, coordinates.longitude || 0]}
         zoom={13}
         scrollWheelZoom={false}
         className="w-full h-full"
