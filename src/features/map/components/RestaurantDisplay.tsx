@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const RestaurantDisplay = (restaurant: restaurantData) => {
   return (
-    <Card className="flex flex-col p-4 md:w-1/3 w-full h-full overflow-y-auto z-100">
+    <Card className="flex flex-col p-4 md:w-1/4 w-full h-full overflow-y-auto z-100 ">
       <h1>{restaurant.name}</h1>
       <p>{restaurant.address}</p>
       <p>{restaurant.rating}</p>

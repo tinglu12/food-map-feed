@@ -33,6 +33,7 @@ export const useVideos = () => {
 
   const loadVideoById = async (videoId: string) => {
     await loadVideoByIdMutation.mutateAsync(videoId);
+    return loadVideoByIdMutation.data;
   };
 
   return {

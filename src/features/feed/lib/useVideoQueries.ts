@@ -8,6 +8,7 @@ export const videoKeys = {
   unwatched: () => [...videoKeys.all, "unwatched"] as const,
   watched: () => [...videoKeys.all, "watched"] as const,
   favorites: () => [...videoKeys.all, "favorites"] as const,
+  videoById: (videoId: string) => [...videoKeys.all, "videoById", videoId] as const,
 };
 
 export const useUnwatchedVideo = () => {
@@ -116,7 +117,7 @@ export const useLoadVideoById = () => {
     mutationFn: loadVideoById,
     onSuccess: (data) => {
       // Update the cache with the loaded video
-      queryClient.setQueryData(videoKeys.unwatched(), data);
+      queryClient.setQueryData(videoKeys.watched(), data);
     },
     onError: (error) => {
       console.error("Error loading video by ID:", error);

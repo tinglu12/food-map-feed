@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import React from "react";
-import { useVideos } from "../hooks/useVideos";
+import { useVideos } from "../hooks/useFeed";
 import { RefreshCcw } from "lucide-react";
 export const ResetButton = () => {
   const { resetHistory, isResetting } = useVideos();

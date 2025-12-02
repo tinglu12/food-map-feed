@@ -3,7 +3,104 @@ import { videoData, locationData } from "../type/video";
 import { restaurantData } from "@/types/restaurant";
 import { openai } from "@/lib/openai";
 
-export const getVideo = async (videoId: string) => {
+/**
+ * Check if video exists in database, return it if found
+ */
+export const getVideoFromDB = async (videoId: string): Promise<videoData | null> => {
+  const supabase = await createClient();
+
+  const { data: video, error } = await supabase
+    .from("videos")
+    .select(
+      `
+      *,
+      restaurants (
+        id,
+        name,
+        address,
+        rating,
+        price_level,
+        photos,
+        restaurant_reviews (
+          id,
+          author_name,
+          rating,
+          comment,
+          created_at
+        )
+      )
+    `,
+    )
+    .eq("id", videoId)
+    .single();
+
+  if (error || !video) {
+    return null;
+  }
+
+  // Get current user for favorite status
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let isFavorited = false;
+
+  if (user) {
+    const { data: favorite } = await supabase
+      .from("video_favorites")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("video_id", videoId)
+      .single();
+    isFavorited = !!favorite;
+  }
+
+  return {
+    id: video.id,
+    title: video.title,
+    description: video.description,
+    thumbnail: video.thumbnail_url || "",
+    latitude: video.latitude,
+    longitude: video.longitude,
+    locationDescription: video.location_description || "",
+    restaurant: video.restaurants
+      ? {
+          name: video.restaurants.name,
+          address: video.restaurants.address,
+          rating: video.restaurants.rating,
+          priceLevel: video.restaurants.price_level || 0,
+          photos: video.restaurants.photos || [],
+          reviews:
+            video.restaurants.restaurant_reviews?.map((review: any) => ({
+              name: review.author_name,
+              comment: review.comment,
+              rating: review.rating,
+            })) || [],
+        }
+      : null,
+    isFavorited,
+  };
+};
+
+/**
+ * Get video - first checks DB, if not found fetches from YouTube and saves
+ */
+export const getVideo = async (
+  videoId: string,
+): Promise<videoData | { error: string; errorMessage?: string }> => {
+  // First, check if video already exists in database
+  const existingVideo = await getVideoFromDB(videoId);
+  if (existingVideo) {
+    return existingVideo;
+  }
+
+  // If not in DB, fetch from YouTube API
+  return fetchAndSaveVideo(videoId);
+};
+
+/**
+ * Fetch video from YouTube API, process with AI, and save to database
+ */
+const fetchAndSaveVideo = async (videoId: string) => {
   const response = await fetch(
     `https://www.googleapis.com/youtube/v3/videos?part=snippet,recordingDetails&id=${videoId}&key=${process.env.GOOGLE_API_KEY}`,
   );
@@ -21,17 +118,18 @@ export const getVideo = async (videoId: string) => {
     id: tempVideoData.id,
     title: tempVideoData.snippet.title,
     description: tempVideoData.snippet.description,
-    thumbnail: tempVideoData.snippet.thumbnails.default.url,
+    thumbnail: tempVideoData.snippet.thumbnails.maxres.url,
     latitude: tempVideoData.recordingDetails?.location?.latitude,
     longitude: tempVideoData.recordingDetails?.location?.longitude,
     locationDescription: tempVideoData.recordingDetails?.locationDescription,
     restaurant: null,
   };
-  console.log("Video data:", videoData);
   const locationResponse = await getLocation(videoData);
   if (!locationResponse.places || locationResponse.places.length === 0) {
+    console.log("Location not found" + locationResponse.error);
     return {
       error: "Location not found",
+      errorMessage: locationResponse.error,
     };
   }
   console.log("Location response:", locationResponse);
@@ -46,9 +144,10 @@ export const getVideo = async (videoId: string) => {
     const location = await getLatitudeLongitude(videoData, place);
     videoData.latitude = location.latitude;
     videoData.longitude = location.longitude;
+  } else {
+    videoData.latitude = place.location?.latitude;
+    videoData.longitude = place.location?.longitude;
   }
-  videoData.latitude = place.location?.latitude;
-  videoData.longitude = place.location?.longitude;
   console.log("Video data:", videoData);
   videoData.restaurant = {
     name: place.displayName?.text || "Unknown",
@@ -73,7 +172,7 @@ export const getVideo = async (videoId: string) => {
 const getLocation = async (query: videoData) => {
   const endpoint = "https://places.googleapis.com/v1/places:searchText";
   const body = await getLocationFromPrompt(query);
-
+  console.log("Body:", body);
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -84,8 +183,9 @@ const getLocation = async (query: videoData) => {
     },
     body: JSON.stringify(body),
   });
-
+  console.log("Response:", response);
   const data = await response.json();
+  console.log("Data:", data);
   return data;
 };
 
@@ -104,10 +204,16 @@ const getLocationFromPrompt = async (query: videoData) => {
     locationName: string (if you find the location name, if not, return the location description)
     locationDescription: string
   `;
-
+  console.log("System prompt:", query.thumbnail);
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    messages: [{ role: "system", content: systemPrompt }],
+    messages: [
+      { role: "system", content: systemPrompt },
+      {
+        role: "user",
+        content: `Here is the video thumbnail URL (if helpful): ${query.thumbnail}`,
+      },
+    ],
   });
   console.log("Response:", response);
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { useVideos } from "../hooks/useVideos";
+import { useVideos } from "../hooks/useFeed";
 import { Button } from "@/components/ui/button";
 
 interface FavoriteButtonProps {
