@@ -116,8 +116,9 @@ export const useLoadVideoById = () => {
   return useMutation({
     mutationFn: loadVideoById,
     onSuccess: (data) => {
-      // Update the cache with the loaded video
-      queryClient.setQueryData(videoKeys.watched(), data);
+      // Update the cache with the loaded video so it becomes the current video
+      // This will automatically update the video state from useUnwatchedVideo()
+      queryClient.setQueryData(videoKeys.unwatched(), data);
     },
     onError: (error) => {
       console.error("Error loading video by ID:", error);

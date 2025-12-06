@@ -20,7 +20,7 @@ const FeedPage = () => {
         {video && <FavoriteButton videoId={video.id} isFavorited={video.isFavorited} />}
       </div>
 
-      {video && <VideoContentDisplay video={video} />}
+      {video && <VideoContentDisplay video={video} onVideoChange={loadVideoById} />}
       {loading && <div>Loading...</div>}
       {!video && <div>No video found</div>}
     </main>

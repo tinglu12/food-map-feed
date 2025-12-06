@@ -66,7 +66,10 @@ const MapComponent = ({ coordinates, onVideoChange, videoId, name }: MapComponen
               <div>
                 <h3 className="font-bold">{favorite.name}</h3>
                 <button
-                  onClick={() => onVideoChange?.(favorite.videoId)}
+                  onClick={() => {
+                    onVideoChange?.(favorite.videoId);
+                    console.log("Video ID:", favorite.videoId);
+                  }}
                   className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
                 >
                   Watch Video
