@@ -57,12 +57,13 @@ export default function UserProfile() {
   if (!user) {
     return <div>User not found</div>;
   }
+  console.log(user);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Avatar>
           <AvatarImage src={user.user_metadata.avatar_url} />
-          <AvatarFallback>{user.user_metadata.name.charAt(0)}</AvatarFallback>
+          <AvatarFallback>{user.user_metadata.name?.charAt(0)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end">
