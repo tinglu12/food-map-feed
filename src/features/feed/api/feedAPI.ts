@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/client";
 import { returnedVideo, videoData } from "../type/video";
+import apiClient from "@/utils/axios";
 
 export const getFeed = async () => {
   const supabase = createClient();
@@ -48,7 +49,7 @@ export const getFeed = async () => {
     id: returnedVideo.id,
     title: returnedVideo.title,
     description: returnedVideo.description,
-    thumbnail: returnedVideo.thumbnail,
+    thumbnailUrl: returnedVideo.thumbnailUrl,
     latitude: returnedVideo.latitude,
     longitude: returnedVideo.longitude,
     locationDescription: returnedVideo.locationDescription,
@@ -88,85 +89,4 @@ export const unfavoriteVideo = async (videoId: string) => {
   const { data: user } = await supabase.auth.getUser();
   const { error } = await supabase.from("video_favorites").delete().eq("video_id", videoId);
   return error;
-};
-
-export const loadVideoById = async (videoId: string) => {
-  const supabase = createClient();
-
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const { data: video, error } = await supabase
-    .from("videos")
-    .select(
-      `
-      *,
-      restaurants (
-        id,
-        name,
-        address,
-        rating,
-        price_level,
-        photos,
-        restaurant_reviews (
-          id,
-          author_name,
-          rating,
-          comment,
-          created_at
-        )
-      )
-    `,
-    )
-    .eq("id", videoId)
-    .single();
-
-  if (error) {
-    console.error("Error loading video by ID:", error);
-    throw error;
-  }
-
-  // Check if user has favorited this video
-  const { data: favorite } = await supabase
-    .from("video_favorites")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("video_id", videoId)
-    .single();
-
-  // Map database data to videoData type
-  const videoData: videoData = {
-    id: video.id,
-    title: video.title,
-    description: video.description,
-    thumbnail: video.thumbnail || "",
-    latitude: video.latitude,
-    longitude: video.longitude,
-    locationDescription: video.location_description || "",
-    restaurant: video.restaurants
-      ? {
-          name: video.restaurants.name,
-          address: video.restaurants.address,
-          rating: video.restaurants.rating,
-          priceLevel: video.restaurants.price_level,
-          photos: video.restaurants.photos || [],
-          reviews:
-            video.restaurants.restaurant_reviews?.map((review: any) => ({
-              id: review.id,
-              author_name: review.author_name,
-              rating: review.rating,
-              comment: review.comment,
-              time_description: review.created_at,
-            })) || [],
-        }
-      : null,
-    isFavorited: !!favorite,
-  };
-
-  return videoData;
 };

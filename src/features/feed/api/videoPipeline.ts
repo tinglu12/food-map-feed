@@ -29,7 +29,7 @@ export const fetchAndSaveVideo = async (videoId: string) => {
     id: tempVideoData.id,
     title: tempVideoData.snippet.title,
     description: tempVideoData.snippet.description,
-    thumbnail: tempVideoData.snippet.thumbnails.maxres.url,
+    thumbnailUrl: tempVideoData.snippet.thumbnails.maxres.url,
     latitude: tempVideoData.recordingDetails?.location?.latitude,
     longitude: tempVideoData.recordingDetails?.location?.longitude,
     locationDescription: tempVideoData.recordingDetails?.locationDescription,
@@ -108,14 +108,14 @@ const getLocationFromPrompt = async (query: videoData) => {
     latitude: query.latitude,
     longitude: query.longitude,
   });
-  console.log("System prompt:", query.thumbnail);
+  console.log("System prompt:", query.thumbnailUrl);
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       { role: "system", content: systemPrompt },
       {
         role: "user",
-        content: getLocationUserPrompt(query.thumbnail),
+        content: getLocationUserPrompt(query.thumbnailUrl),
       },
     ],
   });

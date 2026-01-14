@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getFeed, resetHistory, favoriteVideo, unfavoriteVideo } from "../api/feedAPI";
 import { favoritesKeys } from "@/features/map/lib/useFavoriteQueries";
-import { loadVideoById } from "../api/feedAPI";
+  import { fetchAndSaveVideoById, getVideoById } from "../api/videosAPI";
 
 export const videoKeys = {
   all: ["videos"] as const,
@@ -114,7 +114,7 @@ export const useUnfavoriteVideo = () => {
 export const useLoadVideoById = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: loadVideoById,
+    mutationFn: fetchAndSaveVideoById,
     onSuccess: (data) => {
       // Update the cache with the loaded video so it becomes the current video
       // This will automatically update the video state from useUnwatchedVideo()

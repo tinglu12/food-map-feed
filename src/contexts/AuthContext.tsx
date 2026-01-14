@@ -1,67 +1,95 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { createClient } from "@/utils/supabase/client";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import apiClient from "@/utils/axios";
+import { getAccessToken, removeAccessToken } from "@/utils/cookies";
+import { useRouter } from "next/navigation";
+
+// User type matching your FastAPI backend response
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  avatarUrl?: string;
+  [key: string]: any; // Allow additional fields from backend
+}
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
+  isAuthenticated: boolean;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+
+  // Fetch user info from FastAPI backend
+  const fetchUser = useCallback(async () => {
+    try {
+      const token = getAccessToken();
+
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // Call your FastAPI endpoint to get current user
+      // Adjust the endpoint path based on your FastAPI routes
+      const response = await apiClient.get<User>("/api/auth/me");
+      setUser(response.data);
+    } catch (error: any) {
+      // If 401, token is invalid - clear it
+      if (error.response?.status === 401) {
+        removeAccessToken();
+        setUser(null);
+      } else {
+        console.error("Error fetching user:", error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
-      } catch (error) {
-        console.error("Error getting initial session:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+    fetchUser();
+  }, [fetchUser]);
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // Optionally call FastAPI logout endpoint if you have one
+      // await apiClient.post("/api/auth/logout");
+
+      // Clear token from cookies
+      removeAccessToken();
+      setUser(null);
+
+      // Redirect to login
+      router.push("/login");
     } catch (error) {
       console.error("Error signing out:", error);
+      // Still clear token even if API call fails
+      removeAccessToken();
+      setUser(null);
     }
+  };
+
+  const refreshUser = async () => {
+    await fetchUser();
   };
 
   const value = {
     user,
-    session,
     loading,
+    isAuthenticated: !!user,
     signOut,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

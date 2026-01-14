@@ -4,7 +4,7 @@ export type videoData = {
   id: string;
   title: string;
   description: string;
-  thumbnail: string;
+  thumbnailUrl: string;
   latitude: number;
   longitude: number;
   locationDescription: string;

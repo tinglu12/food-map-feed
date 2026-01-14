@@ -1,22 +1,51 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import VideoContentDisplay from "@/components/VideoContentDisplay";
-import { getVideo } from "@/features/feed/api/videosAPI";
-import VideoPlayer from "@/features/feed/components/VideoPlayer";
+import { getVideoById } from "@/features/feed/api/videosAPI";
 import LinkInput from "@/features/link-input/components/LinkInput";
-import MapCaller from "@/features/map/components/LazyMap";
-import RestaurantDisplay from "@/features/map/components/RestaurantDisplay";
+import { videoData } from "@/features/feed/type/video";
+import { useParams } from "next/navigation";
 
-const VideoPage = async ({ params }: { params: Promise<{ video_id: string }> }) => {
-  const { video_id } = await params;
-  console.log("Resolved video_id:", video_id);
+const VideoPage = () => {
+  const params = useParams();
+  const video_id = params.video_id as string;
+  const [video, setVideo] = useState<videoData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!video_id) {
-    return <div>No video ID provided</div>;
+  useEffect(() => {
+    const fetchVideo = async () => {
+      try {
+        console.log("Video ID:", video_id);
+        if (!video_id) {
+          setError(true);
+          setLoading(false);
+          return;
+        }
+        const videoData = await getVideoById(video_id);
+        if (!videoData) {
+          setError(true);
+        } else {
+          setVideo(videoData);
+        }
+      } catch (err) {
+        console.error("Error fetching video:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVideo();
+  }, [video_id]);
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-  const video = await getVideo(video_id);
-  console.log("Video:", video);
-  if ("error" in video) {
-    return <div>{video.error}</div>;
+  if (!video_id || error || !video) {
+    return <div>Video not found</div>;
   }
 
   return (
@@ -24,7 +53,7 @@ const VideoPage = async ({ params }: { params: Promise<{ video_id: string }> }) 
       <section className="flex justify-center items-center w-full p-4">
         <LinkInput />
       </section>
-      <VideoContentDisplay video={video} />
+      {video && <VideoContentDisplay video={video} />}
     </main>
   );
 };

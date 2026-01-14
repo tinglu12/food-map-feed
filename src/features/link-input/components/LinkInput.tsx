@@ -17,12 +17,19 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { formSchema } from "../lib/schema";
 import { useRouter } from "next/navigation";
+import apiClient from "@/utils/axios";
 
 const LinkInput = () => {
   const router = useRouter();
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    router.push(`/videos/${data.link.split("/").pop()}`);
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    const response = await apiClient.post(`/api/videos/${data.link.split("/").pop()}`);
+    console.log("Response:", response);
+    if (response.status === 200) {
+      router.push(`/videos/${data.link.split("/").pop()}`);
+    } else {
+      console.error("Error fetching video:", response.data);
+    }
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
