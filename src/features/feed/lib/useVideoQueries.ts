@@ -16,7 +16,7 @@ export const useUnwatchedVideo = () => {
     queryKey: videoKeys.unwatched(),
     queryFn: getFeed,
     staleTime: 1000 * 60 * 2, // 2 minutes
-    gcTime: 1000 * 60 * 5, // 5 minutes
+    cacheTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 

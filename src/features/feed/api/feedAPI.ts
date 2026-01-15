@@ -3,85 +3,17 @@ import { returnedVideo, videoData } from "../type/video";
 import apiClient from "@/utils/axios";
 
 export const getFeed = async () => {
-  const supabase = createClient();
-
-  // Get current user
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    throw new Error("User not authenticated");
-  }
-
-  // Get one random unwatched video
-  const { data: unwatchedVideo, error: unwatchedVideoError } = await supabase.rpc(
-    "get_one_unwatched_video",
-    {
-      user_uuid: user.id,
-    },
-  );
-
-  if (unwatchedVideoError) {
-    console.error("Error fetching unwatched video:", unwatchedVideoError);
-    throw unwatchedVideoError;
-  }
-
-  const { error: watchedVideoError } = await supabase
-    .from("watched_videos")
-    .insert({
-      user_id: user.id,
-      video_id: unwatchedVideo?.[0].id,
-    })
-    .select()
-    .single();
-
-  if (watchedVideoError && watchedVideoError.code !== "23505") {
-    // Ignore unique constraint violations
-    console.error("Error marking video as watched:", watchedVideoError);
-    throw watchedVideoError;
-  }
-
-  const returnedVideo = unwatchedVideo?.[0] as returnedVideo;
-  console.log("Returned video:", returnedVideo);
-  const video: videoData = {
-    id: returnedVideo.id,
-    title: returnedVideo.title,
-    description: returnedVideo.description,
-    thumbnailUrl: returnedVideo.thumbnailUrl,
-    latitude: returnedVideo.latitude,
-    longitude: returnedVideo.longitude,
-    locationDescription: returnedVideo.locationDescription,
-    isFavorited: returnedVideo.is_favorited,
-    restaurant: {
-      name: returnedVideo.restaurant_name,
-      address: returnedVideo.restaurant_address,
-      rating: returnedVideo.restaurant_rating,
-      priceLevel: 0,
-      photos: returnedVideo.restaurant_photos,
-      reviews: returnedVideo.restaurant_reviews,
-    },
-  };
-  // Return the video or null if no unwatched videos
-  return video || null;
+  const response = await apiClient.get<videoData>("/api/feed");
+  return response.data;
 };
 
 export const resetHistory = async () => {
-  const supabase = createClient();
-  const { data: user } = await supabase.auth.getUser();
-  const { error } = await supabase.from("watched_videos").delete().eq("user_id", user?.user?.id);
-  return error;
+  await apiClient.post("/api/feed/reset");
 };
 
 export const favoriteVideo = async (videoId: string) => {
-  const supabase = createClient();
-  const { data: user } = await supabase.auth.getUser();
-  const { error } = await supabase.from("video_favorites").insert({
-    user_id: user?.user?.id,
-    video_id: videoId,
-  });
-  return error;
+  const response = await apiClient.post(`/api/feed/${videoId}/favorite`);
+  return response.data;
 };
 
 export const unfavoriteVideo = async (videoId: string) => {
