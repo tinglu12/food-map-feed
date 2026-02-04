@@ -16,7 +16,7 @@ export const useUnwatchedVideo = () => {
     queryKey: videoKeys.unwatched(),
     queryFn: getFeed,
     staleTime: 1000 * 60 * 2, // 2 minutes
-    cacheTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
@@ -46,10 +46,10 @@ export const useFavoriteVideo = () => {
 
       // Optimistically update the cache
       queryClient.setQueryData(videoKeys.unwatched(), (old: any) => {
-        console.log("Optimistic update - old:", old, "videoId:", videoId);
         if (old && old.id === videoId) {
           console.log("Updating cache for video:", videoId);
-          return { ...old, isFavorited: true };
+
+          return { ...old, isFavorite: true };
         }
         console.log("No match found for video:", videoId);
         return old;
@@ -89,7 +89,7 @@ export const useUnfavoriteVideo = () => {
         console.log("Optimistic update (unfavorite) - old:", old, "videoId:", videoId);
         if (old && old.id === videoId) {
           console.log("Updating cache for video (unfavorite):", videoId);
-          return { ...old, isFavorited: false };
+          return { ...old, isFavorite: false };
         }
         console.log("No match found for video (unfavorite):", videoId);
         return old;

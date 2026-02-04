@@ -4,43 +4,16 @@ import { useEffect, useState } from "react";
 import VideoContentDisplay from "@/components/VideoContentDisplay";
 import { getVideoById } from "@/features/feed/api/videosAPI";
 import LinkInput from "@/features/link-input/components/LinkInput";
-import { videoData } from "@/features/feed/type/video";
+import { VideoData } from "@/features/feed/type/video";
 import { useParams } from "next/navigation";
+import { useVideo } from "@/features/feed/hooks/useVideo";
 
 const VideoPage = () => {
   const params = useParams();
   const video_id = params.video_id as string;
-  const [video, setVideo] = useState<videoData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { data: video, isLoading, error } = useVideo(video_id);
 
-  useEffect(() => {
-    const fetchVideo = async () => {
-      try {
-        console.log("Video ID:", video_id);
-        if (!video_id) {
-          setError(true);
-          setLoading(false);
-          return;
-        }
-        const videoData = await getVideoById(video_id);
-        if (!videoData) {
-          setError(true);
-        } else {
-          setVideo(videoData);
-        }
-      } catch (err) {
-        console.error("Error fetching video:", err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVideo();
-  }, [video_id]);
-
-  if (loading) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
@@ -49,11 +22,11 @@ const VideoPage = () => {
   }
 
   return (
-    <main className="flex flex-col gap-2 justify-center items-center w-full h-screen overflow-hidden">
-      <section className="flex justify-center items-center w-full p-4">
+    <main className="z-0 flex flex-col gap-2 justify-center items-center w-full h-screen overflow-hidden">
+      {video && <VideoContentDisplay video={video} />}
+      <section className="absolute bottom-0 left-0 w-full p-4 z-100">
         <LinkInput />
       </section>
-      {video && <VideoContentDisplay video={video} />}
     </main>
   );
 };

@@ -1,33 +1,13 @@
 "use client";
 
-import React from "react";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import L from "leaflet";
 import RestaurantSidebar from "./RestaurantDisplay";
 
-import { restaurantData } from "@/types/restaurant";
+import { RestaurantData } from "@/types/restaurant";
+import { useFavoritesVideosQuery } from "@/features/map/lib/useFavoriteQueries";
 
-import "leaflet/dist/leaflet.css";
-import { useFavorites } from "../hooks/useFavorites";
-
-// Fix for default marker icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-});
-
-// Custom favorite marker icon
-const favoriteIcon = new L.Icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+import { Map, MapMarker, MarkerContent, MarkerPopup, MarkerTooltip } from "@/components/ui/map";
+import { Marker } from "leaflet";
+import Link from "next/link";
 
 interface MapComponentProps {
   coordinates: { latitude: number; longitude: number };
@@ -38,50 +18,46 @@ interface MapComponentProps {
 
 const MapComponent = ({ coordinates, onVideoChange, videoId, name }: MapComponentProps) => {
   console.log("Coordinates:", coordinates);
-  const { data, error } = useFavorites();
+  const { data: favorites, error, isLoading } = useFavoritesVideosQuery();
 
-  const favoriteData = data?.filter((favorite) => favorite.videoId !== videoId);
+  console.log("Favorites:", favorites);
 
-  console.log("Favorites:", data);
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div className="w-full h-full absolute inset-0 z-0">
-      <MapContainer
-        center={[coordinates.latitude || 0, coordinates.longitude || 0]}
-        zoom={13}
-        scrollWheelZoom={false}
-        className="w-full h-full"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {favoriteData?.map((favorite) => (
-          <Marker
-            key={favorite.videoId}
-            position={[favorite.latitude, favorite.longitude]}
-            icon={favoriteIcon}
-          >
-            <Popup>
-              <div>
-                <h3 className="font-bold">{favorite.name}</h3>
-                <button
-                  onClick={() => {
-                    onVideoChange?.(favorite.videoId);
-                    console.log("Video ID:", favorite.videoId);
-                  }}
-                  className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
-                >
-                  Watch Video
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-        <Marker position={[coordinates.latitude, coordinates.longitude]}>
-          <Popup>{name || "Video Location"}</Popup>
-        </Marker>
-      </MapContainer>
+      <Map center={[coordinates.longitude, coordinates.latitude]} zoom={12}>
+        {favorites?.map(
+          (favorite: any) =>
+            favorite.id !== videoId && (
+              <MapMarker
+                key={favorite.id}
+                longitude={favorite.longitude}
+                latitude={favorite.latitude}
+              >
+                <MarkerContent>
+                  <Link href={`/videos/${favorite.id}`}>
+                    <div className="size-4 rounded-full bg-primary border-2 border-white shadow-lg" />
+                  </Link>
+                </MarkerContent>
+              </MapMarker>
+            ),
+        )}
+        <MapMarker longitude={coordinates.longitude} latitude={coordinates.latitude}>
+          <MarkerContent>
+            <MarkerContent>
+              <div className="size-4 rounded-full bg-primary border-2 border-white shadow-lg" />
+            </MarkerContent>
+            <MarkerPopup>{name || "Video Location"}</MarkerPopup>
+          </MarkerContent>
+        </MapMarker>
+      </Map>
     </div>
   );
 };

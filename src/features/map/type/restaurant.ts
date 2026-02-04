@@ -1,4 +1,4 @@
-export type restaurantMapData = {
+export type RestaurantMapData = {
   name: string;
   latitude: number;
   longitude: number;

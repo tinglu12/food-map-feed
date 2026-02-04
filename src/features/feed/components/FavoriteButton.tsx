@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 
 interface FavoriteButtonProps {
   videoId: string;
-  isFavorited: boolean | undefined;
+  isFavorite: boolean | undefined;
 }
 
-const FavoriteButton = ({ videoId, isFavorited }: FavoriteButtonProps) => {
+const FavoriteButton = ({ videoId, isFavorite }: FavoriteButtonProps) => {
   const { favoriteVideo, isFavoriting, unfavoriteVideo, isUnfavoriting } = useVideos();
   const handleFavoriteVideo = async () => {
     await favoriteVideo(videoId);
@@ -16,13 +16,13 @@ const FavoriteButton = ({ videoId, isFavorited }: FavoriteButtonProps) => {
     await unfavoriteVideo(videoId);
   };
 
-  const buttonText = isFavoriting ? "Favoriting..." : isFavorited ? "Unfavorite" : "Favorite";
+  const buttonText = isFavoriting ? "Favoriting..." : isFavorite ? "Unfavorite" : "Favorite";
   const buttonDisabled = isFavoriting || isUnfavoriting;
 
   return (
     <div>
       <Button
-        onClick={isFavorited ? handleUnfavoriteVideo : handleFavoriteVideo}
+        onClick={isFavorite ? handleUnfavoriteVideo : handleFavoriteVideo}
         disabled={buttonDisabled}
       >
         {buttonText}

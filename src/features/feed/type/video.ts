@@ -1,6 +1,6 @@
-import { restaurantData } from "@/types/restaurant";
+import { RestaurantData } from "@/types/restaurant";
 
-export type videoData = {
+export type VideoData = {
   id: string;
   title: string;
   description: string;
@@ -8,11 +8,11 @@ export type videoData = {
   latitude: number;
   longitude: number;
   locationDescription: string;
-  restaurant: restaurantData | null;
-  isFavorited?: boolean;
+  restaurants: RestaurantData[] | null;
+  isFavorite: boolean;
 };
 
-export type locationData = {
+export type LocationData = {
   displayName: string;
   formattedAddress: string;
   priceLevel: number;
@@ -25,9 +25,9 @@ export type locationData = {
   reviews: any[];
 };
 
-export type returnedVideo = videoData & {
+export type ReturnedVideo = VideoData & {
   is_active: boolean;
-  is_favorited: boolean;
+  is_favorite: boolean;
   restaurant_name: string;
   restaurant_address: string;
   restaurant_rating: number;

@@ -1,11 +1,11 @@
-import { videoData } from "../type/video";
+import { VideoData } from "../type/video";
 import { openai } from "@/lib/openai";
 import {
   getLocationSystemPrompt,
   getLocationUserPrompt,
   getLocationTextQuery,
 } from "../lib/prompts";
-import { locationData } from "../type/video";
+import { LocationData } from "../type/video";
 import { createClient } from "@/utils/supabase/server";
 
 /**
@@ -25,7 +25,7 @@ export const fetchAndSaveVideo = async (videoId: string) => {
     };
   }
   console.log("Temp video data:", tempVideoData);
-  const videoData: videoData = {
+  const videoData: VideoData = {
     id: tempVideoData.id,
     title: tempVideoData.snippet.title,
     description: tempVideoData.snippet.description,
@@ -33,7 +33,8 @@ export const fetchAndSaveVideo = async (videoId: string) => {
     latitude: tempVideoData.recordingDetails?.location?.latitude,
     longitude: tempVideoData.recordingDetails?.location?.longitude,
     locationDescription: tempVideoData.recordingDetails?.locationDescription,
-    restaurant: null,
+    restaurants: null,
+    isFavorite: false,
   };
   const locationResponse = await getLocation(videoData);
   if (!locationResponse.places || locationResponse.places.length === 0) {
@@ -60,7 +61,7 @@ export const fetchAndSaveVideo = async (videoId: string) => {
     videoData.longitude = place.location?.longitude;
   }
   console.log("Video data:", videoData);
-  videoData.restaurant = {
+  videoData.restaurants  = [{
     name: place.displayName?.text || "Unknown",
     address: place.formattedAddress || "",
     priceLevel: place.priceLevel || 0,
@@ -74,13 +75,13 @@ export const fetchAndSaveVideo = async (videoId: string) => {
           rating: review.rating,
         };
       }) || [],
-  };
+  }];
   await uploadVideo(videoData);
   console.log("Uploaded video:", videoData);
   return videoData;
 };
 
-const getLocation = async (query: videoData) => {
+const getLocation = async (query: VideoData) => {
   const endpoint = "https://places.googleapis.com/v1/places:searchText";
   const body = await getLocationFromPrompt(query);
   console.log("Body:", body);
@@ -100,7 +101,7 @@ const getLocation = async (query: videoData) => {
   return data;
 };
 
-const getLocationFromPrompt = async (query: videoData) => {
+const getLocationFromPrompt = async (query: VideoData) => {
   const systemPrompt = getLocationSystemPrompt({
     title: query.title,
     locationDescription: query.locationDescription,
@@ -131,7 +132,7 @@ const getLocationFromPrompt = async (query: videoData) => {
   return { textQuery: prompt };
 };
 
-const getLatitudeLongitude = async (videoData: videoData, locationData: locationData) => {
+const getLatitudeLongitude = async (videoData: VideoData, locationData: LocationData) => {
   const address = locationData.formattedAddress;
   const endpoint = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_API_KEY}`;
   const response = await fetch(endpoint);
@@ -142,7 +143,7 @@ const getLatitudeLongitude = async (videoData: videoData, locationData: location
   };
 };
 
-export const uploadVideo = async (videoData: videoData) => {
+export const uploadVideo = async (videoData: VideoData) => {
   const supabase = await createClient();
   const { data: user } = await supabase.auth.getUser();
   const { data: existingVideo, error: videoError } = await supabase
@@ -170,12 +171,12 @@ export const uploadVideo = async (videoData: videoData) => {
     .from("restaurants")
     .insert({
       video_id: videoData.id,
-      name: videoData.restaurant?.name,
-      address: videoData.restaurant?.address,
-      rating: videoData.restaurant?.rating,
+      name: videoData.restaurants?.[0].name,
+      address: videoData.restaurants?.[0].address,
+      rating: videoData.restaurants?.[0].rating,
       latitude: videoData.latitude,
       longitude: videoData.longitude,
-      photos: videoData.restaurant?.photos,
+      photos: videoData.restaurants?.[0].photos,
     })
     .select()
     .single();
@@ -185,11 +186,11 @@ export const uploadVideo = async (videoData: videoData) => {
   }
   // Insert all reviews at once
   if (
-    videoData.restaurant?.reviews &&
-    videoData.restaurant.reviews.length > 0 &&
+    videoData.restaurants?.[0].reviews &&
+    videoData.restaurants?.[0].reviews.length > 0 &&
     restaurantData?.id
   ) {
-    const reviewsToInsert = videoData.restaurant.reviews.map((review) => ({
+    const reviewsToInsert = videoData.restaurants?.[0].reviews.map((review: any) => ({
       restaurant_id: restaurantData.id,
       author_name: review.name,
       comment: review.comment,
