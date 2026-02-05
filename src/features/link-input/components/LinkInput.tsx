@@ -39,31 +39,29 @@ const LinkInput = () => {
     },
   });
   return (
-    <div className="flex gap-2 w-2/3">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-2 w-full">
-          <FormField
-            control={form.control}
-            name="link"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Link</FormLabel>
-                <FormControl>
-                  <Input
-                    className="w-full"
-                    placeholder="https://www.youtube.com/shorts/1234567890"
-                    {...field}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <Button className="cursor-pointer" type="submit">
-            Submit
-          </Button>
-        </form>
-      </Form>
-    </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full w-full">
+        <FormField
+          control={form.control}
+          name="link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Link</FormLabel>
+              <FormControl>
+                <Input
+                  className="w-full"
+                  placeholder="https://www.youtube.com/shorts/1234567890"
+                  {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <Button className="cursor-pointer" type="submit">
+          Submit
+        </Button>
+      </form>
+    </Form>
   );
 };
 

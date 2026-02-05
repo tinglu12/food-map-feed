@@ -15,7 +15,12 @@ const FeedPage = () => {
     <main className="flex flex-col gap-2 justify-center items-center w-full h-screen overflow-hidden">
       {video && <VideoContentDisplay video={video} onVideoChange={loadVideoById} />}
       {loading && <div>Loading...</div>}
-      {!video && <div>No video found</div>}
+      {!video && (
+        <div className="flex flex-col items-center justify-center gap-2">
+          No video found
+          <ResetButton />
+        </div>
+      )}
     </main>
   );
 };

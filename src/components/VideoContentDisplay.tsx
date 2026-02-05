@@ -6,6 +6,7 @@ import React from "react";
 import VideoFeed from "@/features/feed/components/VideoFeed";
 import { RestaurantData } from "@/types/restaurant";
 import MapComponent from "@/features/map/components/MapComponent";
+import { VideoOverlay } from "./VideoOverlay";
 const VideoContentDisplay = ({
   video,
   onVideoChange,
@@ -15,12 +16,7 @@ const VideoContentDisplay = ({
 }) => {
   return (
     <section className="z-0 flex md:flex-row flex-col flex-1 min-h-0 justify-between items-center gap-2 w-full overflow-hidden relative p-4">
-      {video?.restaurants &&
-        video?.restaurants.map((restaurant: RestaurantData) => (
-          <RestaurantDisplay key={restaurant.name} {...restaurant} />
-        ))}
-      <VideoFeed videoId={video.id} />
-
+      <VideoOverlay video={video} />
       <MapComponent
         key={video?.id}
         coordinates={{ latitude: video?.latitude, longitude: video?.longitude }}

@@ -5,9 +5,11 @@ import VideoPlayer from "@/features/feed/components/VideoPlayer";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen gap-2">
+    <main className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
       <h1 className="text-4xl font-bold text-blue-500">Food Map Feed</h1>
-      <LinkInput />
-    </div>
+      <div className="w-full max-w-5xl ">
+        <LinkInput />
+      </div>
+    </main>
   );
 }
