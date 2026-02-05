@@ -1,4 +1,3 @@
-import { createClient } from "@/utils/supabase/server";
 import { VideoData } from "../type/video";
 import apiClient from "@/utils/axios";
 
@@ -7,7 +6,6 @@ import apiClient from "@/utils/axios";
  */
 export const getVideoById = async (videoId: string): Promise<VideoData | null> => {
   const response = await apiClient.get<VideoData>(`/api/videos/${videoId}`);
-  console.log("Video data:", response.data);
   return response.data || null;
 };
 

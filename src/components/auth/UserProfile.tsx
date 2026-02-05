@@ -13,7 +13,6 @@ import LoginButton from "@/components/auth/LoginButton";
 
 export default function UserProfile() {
   const { user, loading } = useAuth();
-  console.log(user);
   if (loading) {
     return <div>Loading...</div>;
   }

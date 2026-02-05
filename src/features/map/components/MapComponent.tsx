@@ -17,10 +17,7 @@ interface MapComponentProps {
 }
 
 const MapComponent = ({ coordinates, onVideoChange, videoId, name }: MapComponentProps) => {
-  console.log("Coordinates:", coordinates);
   const { data: favorites, error, isLoading } = useFavoritesVideosQuery();
-
-  console.log("Favorites:", favorites);
 
   if (isLoading) {
     return <div>Loading...</div>;

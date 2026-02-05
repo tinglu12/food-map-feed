@@ -32,7 +32,6 @@ export const useVideos = () => {
   };
 
   const loadVideoById = async (videoId: string) => {
-    console.log("Loading video by ID:", videoId);
     const loadedVideo = await loadVideoByIdMutation.mutateAsync(videoId);
     // The mutation's onSuccess will update the cache,
     // which will automatically update the video from useUnwatchedVideo()

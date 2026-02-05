@@ -14,11 +14,9 @@ apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Get access token from cookies
     const token = getAccessToken();
-    console.log("Token:", token);
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log("Token:", token);
     return config;
   },
   (error: any) => {

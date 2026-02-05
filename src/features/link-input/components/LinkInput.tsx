@@ -24,7 +24,6 @@ const LinkInput = () => {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const response = await apiClient.post(`/api/videos/${data.link.split("/").pop()}`);
-    console.log("Response:", response);
     if (response.status === 200) {
       router.push(`/videos/${data.link.split("/").pop()}`);
     } else {

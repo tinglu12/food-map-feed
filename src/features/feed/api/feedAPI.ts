@@ -1,4 +1,3 @@
-import { createClient } from "@/utils/supabase/client";
 import { ReturnedVideo, VideoData } from "../type/video";
 import apiClient from "@/utils/axios";
 
